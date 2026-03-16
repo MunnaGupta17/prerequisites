@@ -1,0 +1,85 @@
+// prisma/schema.prisma
+// This file defines every table in your database.
+// Run `npx prisma migrate dev` to apply it.
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model Destination {
+  id          Int      @id @default(autoincrement())
+  slug        String   @unique   // e.g. "thailand", "japan"
+  name        String             // e.g. "Thailand"
+  country     String             // e.g. "Thailand"
+  region      String             // e.g. "Southeast Asia"
+  emoji       String             // e.g. "🇹🇭"
+  description String?
+  visaInfo    String?
+  currency    String?
+  bestSeason  String?
+  budgetRange String?
+  tips        Tip[]
+  createdAt   DateTime @default(now())
+}
+
+model Tip {
+  id            Int         @id @default(autoincrement())
+  destinationId Int
+  destination   Destination @relation(fields: [destinationId], references: [id])
+
+  // Content
+  text          String
+  category      Category
+  travellerType TravellerType @default(SOLO)
+
+  // Author info (anonymous-friendly)
+  authorName    String?       // "Rahul K." or null
+  authorFrom    String?       // "India"
+
+  // Season relevance
+  bestMonths    String[]      // ["november", "december", "january"]
+
+  // Votes
+  votes         Vote[]
+  voteCount     Int           @default(0)
+
+  createdAt     DateTime      @default(now())
+  updatedAt     DateTime      @updatedAt
+}
+
+model Vote {
+  id        Int      @id @default(autoincrement())
+  tipId     Int
+  tip       Tip      @relation(fields: [tipId], references: [id])
+  direction Int      // +1 or -1
+  voterIp   String   // simple IP-based dedup (no auth needed yet)
+  createdAt DateTime @default(now())
+
+  @@unique([tipId, voterIp])   // one vote per IP per tip
+}
+
+enum Category {
+  SCAM
+  VISA
+  MONEY
+  TRANSPORT
+  FOOD
+  CULTURE
+  PACKING
+  ACCOMMODATION
+  GENERAL
+}
+
+enum TravellerType {
+  SOLO
+  COUPLE
+  FAMILY
+  GROUP
+  BUDGET
+  LUXURY
+}
