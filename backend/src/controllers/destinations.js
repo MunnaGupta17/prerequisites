@@ -15,8 +15,9 @@ export async function getAllDestinations(req, res, next) {
 // GET /api/destinations/:slug
 export async function getDestinationBySlug(req, res, next) {
   try {
+    const slug = req.params.slug.toLowerCase().trim()
     const destination = await prisma.destination.findUnique({
-      where: { slug: req.params.slug },
+      where: { slug },
       include: { _count: { select: { tips: true } } }
     })
     if (!destination) return res.status(404).json({ error: 'Destination not found' })
@@ -27,8 +28,9 @@ export async function getDestinationBySlug(req, res, next) {
 // GET /api/destinations/:slug/tips?category=SCAM&travellerType=SOLO&sort=top
 export async function getTipsByDestination(req, res, next) {
   try {
+    const slug = req.params.slug.toLowerCase().trim()
     const destination = await prisma.destination.findUnique({
-      where: { slug: req.params.slug }
+      where: { slug }
     })
     if (!destination) return res.status(404).json({ error: 'Destination not found' })
 

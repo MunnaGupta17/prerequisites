@@ -23,8 +23,11 @@ export async function createTip(req, res, next) {
 
     const { destinationSlug, ...tipData } = parsed.data
 
+    // Always lowercase — user may type "Thailand" instead of "thailand"
+    const slug = destinationSlug.toLowerCase().trim()
+
     const destination = await prisma.destination.findUnique({
-      where: { slug: destinationSlug }
+      where: { slug }
     })
     if (!destination) return res.status(404).json({ error: 'Destination not found' })
 
